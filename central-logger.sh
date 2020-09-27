@@ -11,7 +11,7 @@ progname=${0##*/}
 printf "[i] %s lunched\n" "$progname"
 
 ## Default values
-verbose=1
+verbose=0
 filename=
 keyword_list=
 output='output.log'
@@ -19,18 +19,18 @@ backgroud=0
 
 ## List of options the program will accept;
 ## those options that take arguments are followed by a colon
-optstring=f:k:o:v:b
+optstring=f:k:o:v:b:
 
 ## The loop calls getopts until there are no more options on the command line
 ## Each option is stored in $opt, any option arguments are stored in OPTARG
 while getopts $optstring opt
 do
 	case $opt in
-		f) filename=$OPTARG ;; ## $OPTARG contains the argument to the option
+		f) filename=$OPTARG;; ## $OPTARG contains the argument to the option
 		k) keyword_list=$OPTARG;;
 		o) output=$OPTARG;;
-		v) verbose=$(( $verbose + 1 )) ;;
-		b) backgroud=$(( $backgroud + 1 )) ;;
+		v) verbose=$OPTARG;;
+		b) backgroud=$OPTARG;;
 		*) exit 1 ;;
 	esac
 done

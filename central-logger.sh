@@ -1,12 +1,24 @@
-progname=${0##*/} ## Get the name of the script without its path
+#!/bin/bash
+# Author: Adam Clark
+# Date: 27/09/2020
+# Desciption: Logs watcher. 
+# Pass in the path to the file you would like to watch and a string of keywords you'd like to watch. 
+# You can also pass in an output file. Stdout is default.
+
+## Get the name of the script without its path
+progname=${0##*/}
+printf "%s lunched\n" "$progname"
+
 ## Default values
 verbose=1
 filename=
 keyword_list=
 output='output.txt'
+
 ## List of options the program will accept;
 ## those options that take arguments are followed by a colon
 optstring=f:k:o:v
+
 ## The loop calls getopts until there are no more options on the command line
 ## Each option is stored in $opt, any option arguments are stored in OPTARG
 while getopts $optstring opt
@@ -19,9 +31,11 @@ do
 		*) exit 1 ;;
 	esac
 done
+
 ## Remove options from the command line
 ## $OPTIND points to the next, unparsed argument
 shift "$(( $OPTIND - 1 ))"
+
 ## Check whether a filename was entered
 if [ -n "$filename" ]
 then
@@ -50,8 +64,6 @@ else
 	fi
 exit 2
 fi
-
-
 ## Remove options from the command line
 ## $OPTIND points to the next, unparsed argument
 shift "$(( $OPTIND - 1 ))"
@@ -70,6 +82,7 @@ else
 	exit 1
 fi
 
+printf "Watching %s for entries '%s'\n" "$filename" "$keyword_list"
 tail -fn0 $filename | while read line
 do
 	echo $line | egrep -i $keyword_list

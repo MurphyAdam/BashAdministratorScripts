@@ -6,18 +6,20 @@
 # You can also pass in an output file. Stdout is default.
 
 ## Get the name of the script without its path
+clear
 progname=${0##*/}
-printf "%s lunched\n" "$progname"
+printf "[i] %s lunched\n" "$progname"
 
 ## Default values
 verbose=1
 filename=
 keyword_list=
-output='output.txt'
+output='output.log'
+backgroud=0
 
 ## List of options the program will accept;
 ## those options that take arguments are followed by a colon
-optstring=f:k:o:v
+optstring=f:k:o:v:b
 
 ## The loop calls getopts until there are no more options on the command line
 ## Each option is stored in $opt, any option arguments are stored in OPTARG
@@ -28,6 +30,7 @@ do
 		k) keyword_list=$OPTARG;;
 		o) output=$OPTARG;;
 		v) verbose=$(( $verbose + 1 )) ;;
+		b) backgroud=$(( $backgroud + 1 )) ;;
 		*) exit 1 ;;
 	esac
 done
@@ -41,12 +44,12 @@ if [ -n "$filename" ]
 then
 	if [ $verbose -gt 0 ]
 		then
-		printf "Log file: %s\n" "$filename"
+		printf "[i] Log file: %s\n" "$filename"
 	fi
 else
 	if [ $verbose -gt 0 ]
 	then
-		printf "No log file was entered\n" >&2
+		printf "[e] No filename was entered\n" >&2
 	fi
 	exit 1
 fi
@@ -55,12 +58,12 @@ if [ -f "$filename" ]
 then
 	if [ $verbose -gt 0 ]
 	then
-		printf "Filename %s found\n" "$filename"
+		printf "[i] Filename %s found\n" "$filename"
 	fi
 else
 	if [ $verbose -gt 0 ]
 	then
-		printf "File, %s, does not exist\n" "$filename" >&2
+		printf "[e] File, %s, does not exist\n" "$filename" >&2
 	fi
 exit 2
 fi
@@ -72,33 +75,39 @@ if [ -n "$keyword_list" ]
 then
 	if [ $verbose -gt 0 ]
 		then
-		printf "Keyword list: %s\n" "$keyword_list"
+		printf "[i] Keyword list: %s\n" "$keyword_list"
 	fi
 else
 	if [ $verbose -gt 0 ]
 	then
-		printf "No Keyword list was entered\n" >&2
+		printf "[e] No Keyword list was entered\n" >&2
 	fi
 	exit 1
 fi
 
-printf "Watching %s for entries '%s'\n" "$filename" "$keyword_list"
-tail -fn0 $filename | while read line
-do
-	echo $line | egrep -i $keyword_list
-	if [ $? = 0  ]
-	then
-		echo $line >> $output
-		if [ $verbose -gt 0 ]
-			then
-			printf "Keyword detected: %s\n" "$line"
-		fi
-	fi
-done
+printf "[i] Watching %s for entries '%s'\n" "$filename" "$keyword_list"
 
-## If the verbose option is selected,
-## print the number of arguments remaining on the command line
-if [ $verbose -gt 0 ]
+if [ $backgroud -gt 0 ]
 then
-	printf "Number of arguments is %d\n" "$#"
+	nohup $progname -f $filename -k $keyword_list -o $output &
+	printf "[i] running central-logger with filename [%s], keyword_list [%s] and output_file [%s] in backgroud with nohup\n" "$filename" "$keyword_list" "$output"
+	printf "[i] Redirecting STDOUT to nohup.out\n"
+	exit 0
+else
+	printf "[i] running in foreground\n"
+	tail -fn0 $filename | while read line
+	do
+		echo $line | egrep -i $keyword_list
+		if [ $? = 0  ]
+		then
+			datetime=$( date --iso-8601=seconds )
+			echo "[$datetime]" $line "[in $filename]" >> $output
+			if [ $verbose -gt 0 ]
+				then
+				printf "[i] Keyword detected: %s\n" "$line"
+			fi
+		fi
+	done
 fi
+
+exit 0

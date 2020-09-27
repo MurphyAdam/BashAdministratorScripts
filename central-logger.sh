@@ -8,7 +8,7 @@
 ## Get the name of the script without its path
 clear
 progname=${0##*/}
-printf "[i] %s lunched\n" "$progname"
+printf "[i] %s launched\n" "$progname"
 
 ## Default values
 verbose=0
@@ -44,7 +44,7 @@ if [ -n "$filename" ]
 then
 	if [ $verbose -gt 0 ]
 		then
-		printf "[i] Log file: %s\n" "$filename"
+		printf "[i] Filename to be watched: %s\n" "$filename"
 	fi
 else
 	if [ $verbose -gt 0 ]
@@ -101,7 +101,7 @@ else
 		if [ $? = 0  ]
 		then
 			datetime=$( date --iso-8601=seconds )
-			echo "[$datetime]" $line "[in $filename]" >> $output
+			echo "[$datetime]" "[$line]" "[in $filename]" >> $output
 			if [ $verbose -gt 0 ]
 				then
 				printf "[i] Keyword detected: %s\n" "$line"

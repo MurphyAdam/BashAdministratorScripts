@@ -1,14 +1,22 @@
 #!/bin/bash
 # Author: Adam Clark
 # Date: 27/09/2020
+# Date updated: 20/10/2020
 # Desciption: Logs watcher. 
 # Pass in the path to the file you would like to watch and a string of keywords you'd like to watch. 
 # You can also pass in an output file. Stdout is default.
 
+processCount () {
+numprocesses="$(ps hf -opid,cmd -C "$1" | awk '$2 !~ /^[|\\]/ { ++n } END { print n }')"
+if [[ $numprocesses -gt 2 ]] ; then
+    printf "[i] %s processes with the name '%s' are already running. Exiting. \n" "$numprocesses" "$1"
+    exit 1
+fi
+}
+
+process_name='central-logger.'
 ## Get the name of the script without its path
-clear
 progname=${0##*/}
-printf "[i] %s launched\n" "$progname"
 
 ## Default values
 verbose=0
@@ -16,6 +24,11 @@ filename=
 keyword_list=
 output='output.log'
 backgroud=0
+
+clear
+printf "[i] %s launched\n" "$progname"
+
+processCount $process_name
 
 ## List of options the program will accept;
 ## those options that take arguments are followed by a colon
